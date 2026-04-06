@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM完全攻略ポータル - 最高の回答を引き出す設計図</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8fafc; }
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; }
+    .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    .rotate-y-180 { transform: rotateY(180deg); }
+    .group:hover .group-hover\:rotate-y-180 { transform: rotateY(180deg); }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    /* ブログ本文用のスタイル追加 */
+    .prose h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .prose h3 { font-size: 1.25rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #334155; }
+    .prose p { margin-bottom: 1rem; line-height: 1.7; color: #475569; }
+    .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #475569; }
+    .prose li { margin-bottom: 0.25rem; }
+    .prose .template-box { background-color: #f1f5f9; border-left: 4px solid #0d9488; padding: 1rem; border-radius: 0 0.5rem 0.5rem 0; font-family: monospace; white-space: pre-wrap; font-size: 0.875rem; color: #334155; margin-bottom: 1.5rem;}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // ==========================================
+    // アイコンコンポーネント (クラッシュ防止用)
+    // ==========================================
+    function Icon({ name, className }) {
+      const ref = useRef(null);
+      
+      useEffect(() => {
+        if (ref.current && window.lucide) {
+          ref.current.innerHTML = `<i data-lucide="${name}" class="${className || ''}"></i>`;
+          window.lucide.createIcons({ root: ref.current });
+        }
+      }, [name, className]);
+
+      return <span ref={ref} className="contents"></span>;
+    }
+
+    // ==========================================
+    // メインコンポーネント
+    // ==========================================
+    function App() {
+      const [activeTab, setActiveTab] = useState('home');
+
+      const navItems = [
+        { id: 'home', icon: 'home', label: 'ホーム (要約・スライド)' },
+        { id: 'blog', icon: 'book-open', label: 'テキスト教材・テンプレ集' },
+        { id: 'media', icon: 'play-circle', label: '音声＆動画解説' },
+        { id: 'flashcards', icon: 'layers', label: 'フラッシュカード' },
+        { id: 'quiz', icon: 'check-square', label: '理解度クイズ' },
+      ];
+
+      return (
+        <div className="flex h-screen bg-slate-50 overflow-hidden text-slate-800">
+          
+          {/* サイドバー */}
+          <aside className="w-72 bg-white border-r border-slate-200 shadow-sm flex flex-col h-full z-10 hidden md:flex">
+            <div className="p-6 border-b border-slate-100">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-teal-600 flex items-center justify-center text-white shadow-md">
+                  <Icon name="bot" className="w-6 h-6" />
+                </div>
+                <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-700 to-teal-500">
+                  YDK Learning
+                </h1>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">LLMプロンプト設計 完全攻略</p>
+            </div>
+            
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+              <div className="text-xs font-bold text-slate-400 mb-4 px-3 uppercase tracking-wider">コンテンツ</div>
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${
+                    activeTab === item.id 
+                      ? 'bg-teal-50 text-teal-700 shadow-sm' 
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className={`${activeTab === item.id ? 'text-teal-600' : 'text-slate-400'}`}>
+                    <Icon name={item.icon} className="w-5 h-5" />
+                  </div>
+                  {item.label}
+                  {activeTab === item.id && <Icon name="chevron-right" className="w-4 h-4 ml-auto opacity-50" />}
+                </button>
+              ))}
+            </nav>
+            <div className="p-4 border-t border-slate-100">
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <p className="text-xs font-bold text-slate-700 mb-1">講師: まる@YDK合同会社</p>
+                <p className="text-xs text-slate-500 leading-relaxed">国産投資AIの開発や、実務で使えるLLM活用術を発信。AIから最高の成果を引き出すプロ。</p>
+              </div>
+            </div>
+          </aside>
+
+          {/* メインコンテンツ */}
+          <main className="flex-1 h-full overflow-y-auto scroll-smooth relative">
+            <div className="md:hidden bg-white p-4 border-b border-slate-200 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-md bg-teal-600 flex items-center justify-center text-white">
+                  <Icon name="bot" className="w-4 h-4" />
+                </div>
+                <h1 className="font-bold text-teal-900">YDK Learning</h1>
+              </div>
+              <select 
+                className="bg-slate-100 border-none rounded-lg text-sm font-medium text-slate-700 py-2 px-3 focus:ring-2 focus:ring-teal-500"
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value)}
+              >
+                {navItems.map(item => (
+                  <option key={item.id} value={item.id}>{item.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="max-w-5xl mx-auto p-6 md:p-10 pb-20">
+              {activeTab === 'home' && <HomeView />}
+              {activeTab === 'blog' && <BlogView />}
+              {activeTab === 'media' && <MediaView />}
+              {activeTab === 'flashcards' && <FlashcardsView />}
+              {activeTab === 'quiz' && <QuizView />}
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 1. ホームビュー (要約・スライド)
+    // ==========================================
+    function HomeView() {
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-600 rounded-2xl p-8 md:p-12 text-white shadow-xl mb-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+              <Icon name="cpu" className="w-[300px] h-[300px]" />
+            </div>
+            <div className="relative z-10">
+              <div className="inline-block px-3 py-1 bg-teal-400/30 backdrop-blur-sm rounded-full text-xs font-bold tracking-widest text-teal-100 mb-4 uppercase">
+                Official Course Material
+              </div>
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+                AIから最高の回答を引き出す<br className="hidden md:block"/>「設計図」の作り方
+              </h1>
+              <p className="text-teal-100 text-lg md:text-xl max-w-2xl font-light">
+                「いい質問」を探すのは、もうやめよう。初心者でも一発で100点の成果を出せる、LLMプロンプトの条件設計術。
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <section>
+                <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <Icon name="key" className="text-teal-600 w-6 h-6" /> 完璧な回答を組み上げる「5つの設計原則」
+                </h2>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                  <div className="flex gap-4 items-start mb-6 pb-6 border-b border-slate-100">
+                    <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0 text-teal-600">
+                      <Icon name="zap" className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-800 mb-2">魔法使いに頼むな。作業者に「条件」を渡せ。</h3>
+                      <p className="text-slate-600 leading-relaxed text-sm">
+                        AIを使いこなす本質は「成果物が出る条件の設計」です。ふわっと聞けばふわっと返ります。枠組みを渡して、そのまま使える形で出力させましょう。
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {[
+                      { title: "原則1: 用途(目的)を先に書く", desc: "AIにテーマだけを投げてはいけません。「何に使うか（マニュアルにしたい等）」がゴールです。" },
+                      { title: "原則2: 出力形式を固定する", desc: "箇条書き、表、コピペ用コードなど、最終的な見た目(パッケージ)を指定すると精度が跳ね上がります。" },
+                      { title: "原則3: 対象読者を明示する", desc: "「初心者向け」「実務担当者向け」など、説明の難易度や深さを揃えるためのチューニングダイヤルです。" },
+                      { title: "原則4: 「入れないもの」を書く", desc: "AI特有の「おせっかい（頼んでない提案など）」を防ぐための境界線（ガードレール）を設定します。" },
+                      { title: "原則5: 「感想」ではなく「差分」で直す", desc: "100点を一発で狙わず、70点の叩き台を出させ、「〇〇を消して〇〇を足して」と具体的に修正します。" }
+                    ].map((rule, idx) => (
+                      <div key={idx} className="flex gap-3">
+                        <div className="w-6 h-6 rounded-full bg-teal-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800">{rule.title}</p>
+                          <p className="text-slate-600 text-sm">{rule.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* スライドPDF埋め込み */}
+              <section>
+                <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <Icon name="monitor" className="text-teal-600 w-6 h-6" /> 講義スライド資料
+                </h2>
+                <div className="bg-slate-800 rounded-xl p-4 text-white shadow-lg overflow-hidden border border-slate-700">
+                  <div className="flex justify-between items-center mb-4 px-2">
+                    <div className="flex items-center gap-2">
+                      <Icon name="file-text" className="text-teal-400 w-5 h-5" />
+                      <span className="font-bold">【AIの使い方】スライド.pdf</span>
+                    </div>
+                    <a href="./【AIの使い方】スライド.pdf" download className="bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors">
+                      <Icon name="download" className="w-4 h-4" /> ダウンロード
+                    </a>
+                  </div>
+                  <div className="w-full aspect-[4/3] bg-slate-200 rounded-lg overflow-hidden flex items-center justify-center relative">
+                    <iframe 
+                      src="./【AIの使い方】スライド.pdf" 
+                      className="w-full h-full border-none"
+                      title="講義スライド"
+                    >
+                      <p className="text-slate-500">※実際の環境ではここにPDFが表示されます。</p>
+                    </iframe>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                   <Icon name="alert-triangle" className="text-red-500 w-5 h-5" /> 回答がブレるNGな依頼
+                </h3>
+                <ul className="space-y-4 text-sm text-slate-600">
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0"></div> 
+                    <div><strong>目的なし</strong><br/><span className="text-xs text-slate-400">「〇〇について教えて」→ 辞書的な回答しか返ってこない</span></div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0"></div> 
+                    <div><strong>完成形なし</strong><br/><span className="text-xs text-slate-400">「なんかいい感じにまとめて」→ 使い勝手の悪い形式になる</span></div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0"></div> 
+                    <div><strong>読者なし</strong><br/><span className="text-xs text-slate-400">「わかりやすくして」→ 誰にとってのわかりやすさかAIが迷う</span></div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0"></div> 
+                    <div><strong>制約なし</strong><br/><span className="text-xs text-slate-400">「自由に提案して」→ 頼んでいない余計な要素が大量に混ざる</span></div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 2. ブログビュー (テキスト教材)
+    // ==========================================
+    function BlogView() {
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">テキスト教材・テンプレ集</h2>
+            <p className="text-slate-500">LLMから最高の回答を引き出す方法と、そのままコピペして使える専用プロンプト集です。</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-slate-200">
+            <article className="prose max-w-none">
+              
+              <h2 className="!mt-0">LLMから最高の回答を引き出す方法</h2>
+              <h3>はじめに</h3>
+              <p>LLMは、性能が高いから自動で最高の答えを出してくれるわけではありません。実際には、質問の仕方、条件の置き方、修正の入れ方で、出力の質が大きく変わります。</p>
+              <ul>
+                <li>ふわっと聞けば、ふわっと返る</li>
+                <li>目的と形式を明示すれば、使える形で返る</li>
+                <li>禁止事項まで決めれば、ズレが減る</li>
+                <li>修正指示を正しく入れれば、完成度が一気に上がる</li>
+              </ul>
+              <p>つまり、LLMを使いこなす本質は、<strong>「いい質問をすること」ではなく、「いい成果物が出る条件を設計すること」</strong>です。</p>
+
+              <h2>第1章 なぜLLMの回答はズレるのか</h2>
+              <p>LLMの回答がズレる原因は、たいてい次のどれかです。</p>
+              <ul>
+                <li><strong>1. 目的が曖昧：</strong>「教えて」「作って」だけだと、何に使うのかが不明です。その結果、説明としては正しくても、実務では使えない回答になります。</li>
+                <li><strong>2. 出力形式が曖昧：</strong>文章なのか、箇条書きなのか、表なのか、コードなのか。これを指定しないと使いづらい形で返ってきます。</li>
+                <li><strong>3. 対象読者が曖昧：</strong>初心者向けなのか、実務者向けなのかで必要な粒度は変わります。</li>
+                <li><strong>4. 禁止事項が書かれていない：</strong>LLMは不足を補おうとして頼んでいない提案を足しがちです。</li>
+                <li><strong>5. 一発で完成を期待している：</strong>最初から100点を狙うより、70点を出させてから差分修正するほうが結果が良いです。</li>
+              </ul>
+
+              <h2>第2章 最高の回答を引き出す5原則</h2>
+              <h3>原則1 先に「目的」を書く</h3>
+              <p>最初に書くべきなのはテーマではなく、用途です。<br/>
+              × 「Threads運用について教えて」<br/>
+              〇 「Threads初心者向けに、運用の型をステップバイステップで説明したい。noteやマニュアルに転用できる形で整理して」</p>
+
+              <h3>原則2 「出力形式」を固定する</h3>
+              <p>URLだけ、見出し付きの記事、コピペできるテンプレ、初心者向けマニュアルなど、最終形を先に決めるのが重要です。</p>
+
+              <h3>原則3 「対象読者」を明示する</h3>
+              <p>「完全初心者向け」「技術に詳しくない人向け」など、対象読者がないと説明の難易度がぶれます。</p>
+
+              <h3>原則4 「入れないもの」も書く</h3>
+              <p>「勝手な前提を足さないで」「表は使わないで」「抽象論ではなく実務ベースで」。良いプロンプトは、要望だけでなく境界線も明確です。</p>
+
+              <h3>原則5 修正は「感想」ではなく「差分」で出す</h3>
+              <p>「微妙。もっとよくして」ではなく、「内容の方向性はこのままで、初心者向けに言い換えて。表は使わず、文章と見出しだけで」と指示します。</p>
+
+              <h2>第3章 最強の基本構文</h2>
+              <p>LLMに高精度で依頼するときの基本構文はこれです。情報収集、記事作成、コード生成など広く使えます。</p>
+              <div className="template-box">
+目的は〇〇。<br/>
+用途は〇〇。<br/>
+対象読者は〇〇。<br/>
+出力形式は〇〇。<br/>
+必ず入れてほしい要素は〇〇。<br/>
+入れないでほしい要素は〇〇。<br/>
+抽象論ではなく〇〇まで具体化して。<br/>
+そのまま〇〇できる完成形で出力して。
+              </div>
+
+              <h2>第7章 コピペ用・万能テンプレ</h2>
+              <p>日常の様々なタスクにそのまま使えるテンプレート集です。</p>
+
+              <h3>万能テンプレ</h3>
+              <div className="template-box">
+目的は〇〇です。<br/>
+用途は〇〇です。<br/>
+対象読者は〇〇です。<br/>
+出力形式は〇〇でお願いします。<br/>
+必ず入れてほしい要素は〇〇です。<br/>
+入れないでほしい要素は〇〇です。<br/>
+抽象論ではなく、〇〇まで具体化してください。<br/>
+そのまま〇〇に使える完成形で出力してください。
+              </div>
+
+              <h3>修正テンプレ</h3>
+              <div className="template-box">
+方向性は良いです。<br/>
+ただし、次を修正してください。<br/>
+・〇〇を削除<br/>
+・〇〇を追加<br/>
+・〇〇をもっと具体化<br/>
+・形式を〇〇に変更<br/>
+・全体の品質を〇〇に揃える
+              </div>
+
+              <h3>初心者向け変換テンプレ</h3>
+              <div className="template-box">
+この内容を、初心者でも実際に行動できるレベルまで言い換えてください。<br/>
+専門用語は必要最小限にし、操作手順や判断基準を増やしてください。<br/>
+抽象的な説明ではなく、次に何をすべきかがわかる形にしてください。
+              </div>
+
+              <h2>あなた専用の運用ルール</h2>
+              <p>テンプレそのものより、以下の運用ルールを守ると精度がさらに上がります。</p>
+              <ol className="list-decimal pl-5 space-y-2 text-slate-600 mb-6">
+                <li><strong>最初に「用途」を必ず書く：</strong> ただ聞くのではなく、何に使うかを書く。</li>
+                <li><strong>形式を先に固定する：</strong> URLだけ、記事、PDF原稿など。</li>
+                <li><strong>不要なものを先に禁止する：</strong> これはかなり重要です。</li>
+                <li><strong>初回は叩き台で良いと割り切る：</strong> 一発完成を狙わず、差分修正前提で出す。</li>
+                <li><strong>修正は差分で出す：</strong> 「どこを消すか」「何を足すか」「どの粒度にするか」を分けて書く。</li>
+                <li><strong>「初心者向け」のときは操作粒度まで要求する：</strong> わかりやすく、ではなく、どこを押すかまで。</li>
+              </ol>
+
+              <h3>毎回長く書けない時の短縮版テンプレ</h3>
+              <div className="template-box mb-0">
+目的は〇〇。用途は〇〇。対象は〇〇。<br/>
+出力は〇〇形式。<br/>
+勝手な追加はしない。<br/>
+抽象論ではなく、そのまま使える完成形で。
+              </div>
+
+            </article>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 3. メディアビュー (動画・音声)
+    // ==========================================
+    function MediaView() {
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">音声＆動画解説</h2>
+            <p className="text-slate-500">プロンプト設計の極意を、動画と音声でいつでもどこでもインプット。</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200 flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                  <Icon name="monitor-play" className="w-8 h-8" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Video Tutorial</div>
+                  <h3 className="text-xl font-bold text-slate-800 break-all">【AIの使い方】動画.mp4</h3>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm mb-6 flex-1">
+                大規模言語モデルを使いこなすための動画解説。AIの曖昧な答えにうんざりしている方向けに、回答がズレる5つの理由と、それを防ぐ最強の基本構文を解説します。
+              </p>
+              <div className="bg-slate-900 rounded-xl overflow-hidden shadow-inner w-full aspect-video">
+                <video controls className="w-full h-full object-cover" src="./【AIの使い方】動画.mp4">
+                  お使いのブラウザは動画再生をサポートしていません。
+                </video>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200 flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                  <Icon name="mic" className="w-8 h-8" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1">Podcast</div>
+                  <h3 className="text-xl font-bold text-slate-800 break-all">【AIの使い方】ポッドキャスト.m4a</h3>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm mb-6 flex-1">
+                「レストランで曖昧な注文をしたらどうなる？」という日常の例えから、AIに対する条件設計（プロンプトエンジニアリング）の重要性を対話形式で分かりやすく解き明かします。
+              </p>
+              <div className="bg-slate-50 rounded-xl p-6 border border-slate-200 flex flex-col items-center justify-center h-auto aspect-video">
+                <Icon name="headphones" className="text-slate-300 mb-6 w-12 h-12" />
+                <audio controls className="w-full" src="./【AIの使い方】ポッドキャスト.m4a">
+                  お使いのブラウザは音声再生をサポートしていません。
+                </audio>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 4. フラッシュカードビュー
+    // ==========================================
+    function FlashcardsView() {
+      const cards = [
+        { front: "LLMを使いこなす\n「本質」とは？", back: "「いい質問をすること」ではなく、「いい成果物が出る条件を設計すること」。\n\n魔法使いに頼むのではなく、優秀な作業者に枠組みを渡す感覚。" },
+        { front: "回答が使えない\n4つの原因", back: "①目的が曖昧\n②出力形式が曖昧\n③対象読者が曖昧\n④禁止事項がない（おせっかいを防いでいない）" },
+        { front: "最強の基本構文\n（必須項目）", back: "・目的（何のため）\n・用途（何に使う）\n・対象読者（誰向け）\n・出力形式（どんな形で）\n・必須要素と禁止事項" },
+        { front: "NGな依頼の\n典型例", back: "・「〇〇について教えて」\n・「なんかいい感じにまとめて」\n・「わかりやすくして」\n・「自由に提案して」\n※これらはAIが迷い、ブレる原因になる。" },
+        { front: "初回プロンプトの\n考え方", back: "最初から100点を目指さないこと。\nまずは「70点の叩き台」を出させ、そこから差分修正を行う方が、結果的に早く高品質に仕上がる。" },
+        { front: "正しい「修正指示」\nの出し方", back: "「なんか微妙」「もっと良くして」といった【感想】はNG。\n\n「〇〇を削除し、〇〇を加え、文章形式にして」と【差分】を具体的に伝えること。" }
+      ];
+
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-800 mb-2">重要概念フラッシュカード</h2>
+              <p className="text-slate-500">プロンプト設計の必須知識を反復学習。カードをホバー（タップ）して裏面を確認。</p>
+            </div>
+            <div className="bg-teal-50 text-teal-700 text-sm font-bold px-4 py-2 rounded-lg border border-teal-100 inline-flex items-center gap-2">
+              <Icon name="layers" className="w-4 h-4" /> 全{cards.length}枚
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cards.map((card, idx) => (
+              <div key={idx} className="group perspective-1000 w-full h-56 cursor-pointer">
+                <div className="relative w-full h-full transition-transform duration-700 transform-style-3d group-hover:rotate-y-180">
+                  <div className="absolute inset-0 backface-hidden bg-white border-2 border-slate-200 rounded-2xl flex flex-col items-center justify-center p-6 shadow-sm group-hover:shadow-md transition-shadow">
+                    <span className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Question</span>
+                    <h3 className="text-xl font-bold text-teal-900 text-center whitespace-pre-line leading-relaxed">{card.front}</h3>
+                  </div>
+                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-teal-900 to-teal-700 text-white rounded-2xl flex flex-col items-center justify-center p-6 shadow-xl">
+                    <span className="text-teal-300 text-xs font-bold uppercase tracking-widest mb-3">Answer</span>
+                    <p className="text-center text-sm leading-relaxed font-medium whitespace-pre-line">{card.back}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 5. クイズビュー
+    // ==========================================
+    function QuizView() {
+      const questions = [
+        {
+          q: "LLMを使いこなすための「本質」として、資料で最も強調されているのはどれか？",
+          options: [
+            "LLMの専門用語や内部構造を深く理解すること",
+            "AIの機嫌を取るために丁寧な言葉遣いで質問すること",
+            "「いい質問」を探すのではなく、「いい成果物が出る条件を設計」すること",
+            "できるだけ短い文章で簡潔に指示を出すこと"
+          ],
+          answer: 2,
+          expl: "LLMは魔法ではなく道具です。性能が高いからといって自動で最良の答えが出るわけではなく、条件（枠組み）の設計によって出力の質が大きく変わります。"
+        },
+        {
+          q: "プロンプトの最初に「テーマ」ではなく「目的（用途）」を書くべき理由はどれか？",
+          options: [
+            "目的を書かないとAIがエラーを起こして停止するから",
+            "用途を明示することで、AIが適切な構成や方向性を判断できるようになるから",
+            "目的を書くと、回答の文字数が必ず半分に減って読みやすくなるから",
+            "目的を書くことで、AIが自動的に最新のネット情報を検索するから"
+          ],
+          answer: 1,
+          expl: "単にテーマを聞くのではなく「何に使うか（初心者向けマニュアルにする等）」を伝えることで、LLMは実務ですぐに使える形に回答を調整してくれます。"
+        },
+        {
+          q: "プロンプトに「入れないもの（禁止事項）」を含める最大の理由はどれか？",
+          options: [
+            "LLMは不足を補おうとして、頼んでいない前提や提案を勝手に追加しがちだから",
+            "禁止事項を入れると、AIのテキスト生成速度が劇的に上がるから",
+            "セキュリティ上の理由で、特定の単語をブロックする必要があるから",
+            "文字数制限を回避するためのプロンプトハックの基本だから"
+          ],
+          answer: 0,
+          expl: "LLMは「親切心」から余計な情報を足す傾向（おせっかい）があります。良いプロンプトは要望だけでなく、境界線（やってほしくないこと）も明確にする必要があります。"
+        },
+        {
+          q: "LLMから出力された回答を修正する際、最も推奨される方法はどれか？",
+          options: [
+            "「微妙」「もっと良くして」と抽象的に伝え、AIの自己学習を促す",
+            "「方向性は良いが、対象を初心者向けにし、表はやめて文章にして」と差分を伝える",
+            "うまくいかなかったら、全く別のLLMに乗り換えて最初からやり直す",
+            "もう一度全く同じプロンプトを送信し、偶然良い回答が出るのを待つ"
+          ],
+          answer: 1,
+          expl: "修正で大事なのは「感想」ではなく「何をどう変えるか（差分）」の指示です。追加、削除、変更、粒度の調整を具体的に伝えて精度を上げましょう。"
+        }
+      ];
+
+      const [answers, setAnswers] = useState({});
+      const [submitted, setSubmitted] = useState(false);
+      const [score, setScore] = useState(0);
+
+      const handleSelect = (qIdx, optIdx) => {
+        if (submitted) return;
+        setAnswers({ ...answers, [qIdx]: optIdx });
+      };
+
+      const handleSubmit = () => {
+        let currentScore = 0;
+        questions.forEach((q, idx) => {
+          if (answers[idx] === q.answer) currentScore++;
+        });
+        setScore(currentScore);
+        setSubmitted(true);
+      };
+
+      const resetQuiz = () => {
+        setAnswers({});
+        setSubmitted(false);
+        setScore(0);
+      };
+
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">理解度確認クイズ</h2>
+            <p className="text-slate-500">LLMを「作業者」として完璧に使いこなす準備はできていますか？</p>
+          </div>
+
+          <div className="space-y-8">
+            {questions.map((q, qIdx) => (
+              <div key={qIdx} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex gap-3 leading-relaxed">
+                  <span className="text-teal-600 flex-shrink-0">Q{qIdx + 1}.</span> {q.q}
+                </h3>
+                <div className="space-y-3">
+                  {q.options.map((opt, optIdx) => {
+                    const isSelected = answers[qIdx] === optIdx;
+                    const isCorrect = q.answer === optIdx;
+                    
+                    let btnClass = "w-full text-left px-5 py-4 rounded-xl border-2 transition-all duration-200 font-medium text-sm md:text-base leading-relaxed ";
+                    
+                    if (!submitted) {
+                      btnClass += isSelected 
+                        ? "border-teal-500 bg-teal-50 text-teal-800" 
+                        : "border-slate-100 bg-slate-50 text-slate-600 hover:border-teal-200 hover:bg-white";
+                    } else {
+                      if (isCorrect) {
+                        btnClass += "border-green-500 bg-green-50 text-green-800";
+                      } else if (isSelected && !isCorrect) {
+                        btnClass += "border-red-500 bg-red-50 text-red-800";
+                      } else {
+                        btnClass += "border-slate-100 bg-slate-50 text-slate-400 opacity-50";
+                      }
+                    }
+
+                    return (
+                      <button 
+                        key={optIdx} 
+                        onClick={() => handleSelect(qIdx, optIdx)}
+                        disabled={submitted}
+                        className={btnClass}
+                      >
+                        {opt}
+                        {submitted && isCorrect && <span className="float-right text-green-600 font-bold ml-2">✓ 正解</span>}
+                        {submitted && isSelected && !isCorrect && <span className="float-right text-red-600 font-bold ml-2">✗ 不正解</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                {submitted && (
+                  <div className={`mt-5 p-4 rounded-xl text-sm leading-relaxed ${answers[qIdx] === q.answer ? 'bg-green-50 border border-green-100 text-green-800' : 'bg-red-50 border border-red-100 text-red-800'}`}>
+                    <strong>💡 解説: </strong>{q.expl}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 p-6 bg-slate-100 rounded-2xl text-center">
+            {!submitted ? (
+              <button 
+                onClick={handleSubmit}
+                disabled={Object.keys(answers).length < questions.length}
+                className={`px-8 py-3 rounded-xl font-bold text-white shadow-md transition-all ${
+                  Object.keys(answers).length < questions.length 
+                    ? 'bg-slate-400 cursor-not-allowed' 
+                    : 'bg-teal-600 hover:bg-teal-500 hover:scale-105 active:scale-95'
+                }`}
+              >
+                回答を採点する
+              </button>
+            ) : (
+              <div className="animate-in zoom-in duration-500">
+                <h3 className="text-2xl font-bold mb-2">
+                  結果: {score} / {questions.length} 問正解
+                </h3>
+                {score === questions.length ? (
+                  <p className="text-green-600 font-bold mb-6 flex items-center justify-center gap-2 text-lg">
+                    🎉 完璧です！プロンプト設計の基礎が身についています。
+                  </p>
+                ) : (
+                  <p className="text-amber-600 font-bold mb-6">
+                    解説を読んで、条件設計のポイントをもう一度復習しましょう。
+                  </p>
+                )}
+                <button 
+                  onClick={resetQuiz}
+                  className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold transition-colors"
+                >
+                  もう一度挑戦する
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
