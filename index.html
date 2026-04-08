@@ -63,6 +63,37 @@
     }
 
     // ==========================================
+    // 広告（マネタイズ誘導）コンポーネント
+    // ==========================================
+    function AdBanner() {
+      return (
+        <div className="mt-12 mb-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200 rounded-full opacity-20 -mr-10 -mt-10 blur-2xl"></div>
+          <div className="flex-1 relative z-10">
+            <div className="inline-block px-3 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded-full mb-3 border border-orange-200">
+              🔥 スキルを収益化したい方へ
+            </div>
+            <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-2">
+              あなたもこんな学習アプリを作ってみませんか？
+            </h3>
+            <p className="text-slate-600 text-sm leading-relaxed">
+              AIを活用して独自の学習コンテンツを作り、実際にマネタイズするまでの完全ロードマップ。私が実践する収益化の裏側をすべて公開しています。
+            </p>
+          </div>
+          <a 
+            href="https://maruno-room.myshopify.com/products/shichan-complete" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-full md:w-auto whitespace-nowrap text-center bg-orange-500 hover:bg-orange-400 text-white font-bold py-3 px-8 rounded-xl shadow-md shadow-orange-200 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 relative z-10"
+          >
+            完全攻略ロードマップを見る
+            <Icon name="external-link" className="w-4 h-4" />
+          </a>
+        </div>
+      );
+    }
+
+    // ==========================================
     // メインコンポーネント
     // ==========================================
     function App() {
@@ -271,6 +302,9 @@
               </div>
             </div>
           </div>
+          
+          {/* 広告バナーをホーム下部に追加 */}
+          <AdBanner />
         </div>
       );
     }
@@ -395,6 +429,9 @@
 
             </article>
           </div>
+
+          {/* 広告バナーをブログ下部に追加 */}
+          <AdBanner />
         </div>
       );
     }
@@ -452,6 +489,9 @@
               </div>
             </div>
           </div>
+
+          {/* 広告バナーをメディア下部に追加 */}
+          <AdBanner />
         </div>
       );
     }
@@ -497,6 +537,9 @@
               </div>
             ))}
           </div>
+
+          {/* 広告バナーをフラッシュカード下部に追加 */}
+          <AdBanner />
         </div>
       );
     }
@@ -669,6 +712,9 @@
               </div>
             )}
           </div>
+
+          {/* 広告バナーをクイズ下部に追加 */}
+          <AdBanner />
         </div>
       );
     }
