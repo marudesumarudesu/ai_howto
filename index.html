@@ -63,6 +63,22 @@
     }
 
     // ==========================================
+    // もっと学ぶボタン コンポーネント (各タブ上部用)
+    // ==========================================
+    function LearnMoreButton({ className }) {
+      return (
+        <a 
+          href="https://maruno-room.myshopify.com/products/shichan-complete" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className={`shrink-0 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-orange-300 text-white font-bold py-2.5 px-5 rounded-xl shadow-md shadow-orange-200/50 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 ${className || ''}`}
+        >
+          もっと学ぶ <Icon name="external-link" className="w-4 h-4" />
+        </a>
+      );
+    }
+
+    // ==========================================
     // 広告（マネタイズ誘導）コンポーネント
     // ==========================================
     function AdBanner() {
@@ -70,14 +86,14 @@
         <div className="mt-12 mb-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200 rounded-full opacity-20 -mr-10 -mt-10 blur-2xl"></div>
           <div className="flex-1 relative z-10">
-            <div className="inline-block px-3 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded-full mb-3 border border-orange-200">
-              🔥 スキルを収益化したい方へ
+            <div className="inline-block px-3 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded-full mb-3 border border-orange-200 shadow-sm">
+              🔥 サブスク課金地獄から抜け出す
             </div>
             <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-2">
-              あなたもこんな学習アプリを作ってみませんか？
+              「AIを作る側」のエンジニアが教えるマネタイズ術
             </h3>
             <p className="text-slate-600 text-sm leading-relaxed">
-              AIを活用して独自の学習コンテンツを作り、実際にマネタイズするまでの完全ロードマップ。私が実践する収益化の裏側をすべて公開しています。
+              高額なAPI代やスクールの罠を回避し、1つのLLMと費用0円のローカル環境だけで独自の学習コンテンツやツールを作り、集客・販売まで全自動化する完全ロードマップを公開。
             </p>
           </div>
           <a 
@@ -86,7 +102,7 @@
             rel="noopener noreferrer"
             className="w-full md:w-auto whitespace-nowrap text-center bg-orange-500 hover:bg-orange-400 text-white font-bold py-3 px-8 rounded-xl shadow-md shadow-orange-200 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 relative z-10"
           >
-            完全攻略ロードマップを見る
+            完全攻略キットを見る
             <Icon name="external-link" className="w-4 h-4" />
           </a>
         </div>
@@ -194,16 +210,19 @@
             <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
               <Icon name="cpu" className="w-[300px] h-[300px]" />
             </div>
-            <div className="relative z-10">
-              <div className="inline-block px-3 py-1 bg-teal-400/30 backdrop-blur-sm rounded-full text-xs font-bold tracking-widest text-teal-100 mb-4 uppercase">
-                Official Course Material
+            <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start gap-6">
+              <div>
+                <div className="inline-block px-3 py-1 bg-teal-400/30 backdrop-blur-sm rounded-full text-xs font-bold tracking-widest text-teal-100 mb-4 uppercase">
+                  Official Course Material
+                </div>
+                <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+                  AIから最高の回答を引き出す<br className="hidden md:block"/>「設計図」の作り方
+                </h1>
+                <p className="text-teal-100 text-lg md:text-xl max-w-2xl font-light">
+                  「いい質問」を探すのは、もうやめよう。初心者でも一発で100点の成果を出せる、LLMプロンプトの条件設計術。
+                </p>
               </div>
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
-                AIから最高の回答を引き出す<br className="hidden md:block"/>「設計図」の作り方
-              </h1>
-              <p className="text-teal-100 text-lg md:text-xl max-w-2xl font-light">
-                「いい質問」を探すのは、もうやめよう。初心者でも一発で100点の成果を出せる、LLMプロンプトの条件設計術。
-              </p>
+              <LearnMoreButton className="lg:mt-8" />
             </div>
           </div>
 
@@ -315,9 +334,12 @@
     function BlogView() {
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">テキスト教材・テンプレ集</h2>
-            <p className="text-slate-500">LLMから最高の回答を引き出す方法と、そのままコピペして使える専用プロンプト集です。</p>
+          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-800 mb-2">テキスト教材・テンプレ集</h2>
+              <p className="text-slate-500">LLMから最高の回答を引き出す方法と、そのままコピペして使える専用プロンプト集です。</p>
+            </div>
+            <LearnMoreButton />
           </div>
 
           <div className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-slate-200">
@@ -442,9 +464,12 @@
     function MediaView() {
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">音声＆動画解説</h2>
-            <p className="text-slate-500">プロンプト設計の極意を、動画と音声でいつでもどこでもインプット。</p>
+          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-800 mb-2">音声＆動画解説</h2>
+              <p className="text-slate-500">プロンプト設計の極意を、動画と音声でいつでもどこでもインプット。</p>
+            </div>
+            <LearnMoreButton />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -516,8 +541,11 @@
               <h2 className="text-3xl font-bold text-slate-800 mb-2">重要概念フラッシュカード</h2>
               <p className="text-slate-500">プロンプト設計の必須知識を反復学習。カードをホバー（タップ）して裏面を確認。</p>
             </div>
-            <div className="bg-teal-50 text-teal-700 text-sm font-bold px-4 py-2 rounded-lg border border-teal-100 inline-flex items-center gap-2">
-              <Icon name="layers" className="w-4 h-4" /> 全{cards.length}枚
+            <div className="flex items-center gap-3">
+              <div className="bg-teal-50 text-teal-700 text-sm font-bold px-4 py-2.5 rounded-xl border border-teal-100 inline-flex items-center gap-2">
+                <Icon name="layers" className="w-4 h-4" /> 全{cards.length}枚
+              </div>
+              <LearnMoreButton />
             </div>
           </div>
 
@@ -621,9 +649,12 @@
 
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">理解度確認クイズ</h2>
-            <p className="text-slate-500">LLMを「作業者」として完璧に使いこなす準備はできていますか？</p>
+          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="text-left">
+              <h2 className="text-3xl font-bold text-slate-800 mb-2">理解度確認クイズ</h2>
+              <p className="text-slate-500">LLMを「作業者」として完璧に使いこなす準備はできていますか？</p>
+            </div>
+            <LearnMoreButton />
           </div>
 
           <div className="space-y-8">
